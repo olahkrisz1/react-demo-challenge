@@ -1,90 +1,63 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Search from "./components/Search";
 
-class App extends Component {
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      latlong: "",
-      venues: []
-    };
-  }
+const App = () => {
+  const [venues, setVenues] = useState([]);
 
-  componentDidMount() {
-    this.getLocation();
-  }
+  useEffect(() => {
+    getVenues();
+  }, []);
+  
 
-  getLocation = () => {
-    navigator.geolocation.getCurrentPosition((response) => {
-      this.setState(
-        {
-          latlong: response.coords.latitude + "," + response.coords.longitude
-        },
-        () => {
-          this.getVenues();
-        }
-      );
-    });
-  };
-
-  getVenues = (query) => {
+  const getVenues = (query) => {
     const options = {
       method: 'GET',
       headers: {
         accept: 'application/json',
-        Authorization: 'fsq3UPqtano6NBMcCUSI6Krdbm5YQrj9NYNgFDp2kBjl7P0='
+        Authorization: process.env.REACT_APP_SECRETAPI
       }
     };
 
-    const endpoint = 'https://api.foursquare.com/v3/places/search';
+    const endpoint = 'https://api.foursquare.com/v3/places/search?radius=5000&limit=30';
 
     fetch(endpoint, options)
       .then(response => response.json())
       .then(data => {
-        const venues = data?.results || [];
-        console.log("venues data:", data);
-
+        const venuesData = data?.results || [];
         let filteredVenues = [];
-        if (query) {
-          console.log("Query:", query);
-          filteredVenues = venues.filter(venue => {
-            console.log("Venue categories:", venue.categories);
-            const categories = venue.categories.map(category => category.name);
-            console.log("Categories:", categories);
-            return categories.includes(query);
+
+        if (query && query.toLowerCase() !== 'all') {
+          filteredVenues = venuesData.filter(venue => {
+            const categories = venue.categories.map(category => category.name.toLowerCase());
+            return categories.includes(query.toLowerCase());
           });
+        } else {
+          filteredVenues = venuesData;
         }
-  
-  
 
-        console.log("Filtered venues:", filteredVenues);
-
-        this.setState({ venues: filteredVenues });
+        setVenues(filteredVenues);
       })
       .catch(err => console.error(err));
   }
 
-  render() {
-    const { venues } = this.state;
-    console.log("Venues:", venues);
+  return (
+    <div className="container">
+      <h1 className="my-4">Venue Search</h1>
 
-    return (
-      <div>
-        <Search getVenues={this.getVenues} />
+      <Search getVenues={getVenues} />
 
-        <ul>
-          {venues && venues.map((venue, index) => (
-            <li key={index}>
-              <p>Name: {venue.name}</p>
-              <p>Address: {venue.location.address}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
+      <ul className="list-group my-4">
+        {venues.map((venue, index) => (
+          <li className="list-group-item" key={index}>
+            <p>Name: {venue.name}</p>
+            <p>Address: {venue.location.address}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default App;
