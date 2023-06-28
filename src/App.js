@@ -38,6 +38,7 @@ const App = () => {
         }
 
         setVenues(filteredVenues);
+        console.log(filteredVenues)
       })
       .catch(err => console.error(err));
   }

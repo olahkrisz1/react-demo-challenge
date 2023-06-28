@@ -1,29 +1,26 @@
-import React, { Component } from 'react';
-export default class Search extends Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        query: ''
-      };
-    }
-  
-    handleInputChange = (event) => {
-      this.setState({ query: event.target.value });
-    }
-  
-    handleFormSubmit = (event) => {
-      event.preventDefault();
-      this.props.getVenues(this.state.query);
-    }
-  
-    render() {
-      return (
-        <form onSubmit={this.handleFormSubmit}>
-          <input type="text" onChange={this.handleInputChange} />
-          <button type="submit">Search</button>
-        </form>
-      );
-    }
-  }
+import React, { useState } from 'react';
+
+const Search = ({ getVenues }) => {
+  const [query, setQuery] = useState('');
+
+  const handleInputChange = (event) => {
+    setQuery(event.target.value);
+  };
+
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+    getVenues(query);
+  };
+
+  return (
+    <form onSubmit={handleFormSubmit}>
+      <input type="text" onChange={handleInputChange} />
+      <button type="submit">Search</button>
+    </form>
+  );
+};
+
+export default Search;
+
   
 
